@@ -118,7 +118,7 @@ pip install -r requirements.txt
   ```  
 
 
-#### 2.3.6 King Dataset (House Price Prediction Dataset)
+#### 2.3.6 King Dataset 
 - **Objective**: Download and store in the `~/Tabula/Real_Datasets` directory, and name it `King_compressed.csv`  
 - **Command to execute**:  
   ```bash
