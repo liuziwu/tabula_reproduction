@@ -22,8 +22,6 @@ conda activate tabula
 pip install -r requirements.txt
 ```
 
-The Insurance dataset is also provided within the code. We do not hold the copyright of the dataset; the original dataset can also be downloaded [here](https://www.kaggle.com/datasets/mirichoi0218/insurance). To download the pre-trained model on all datasets used in the paper, download [here](https://drive.google.com/file/d/1_YxelekxY5MXhgn93MYgsZEEfBYAy7h6/view?usp=sharing). Do not forget to create a folder `pretrained-model` and place the downloaded model inside.
-
 
 ### 1. Configure Kaggle Environment (Preparation for Subsequent Dataset Downloads)
 - **Step 1: Register a Kaggle account**  
@@ -71,7 +69,7 @@ The Insurance dataset is also provided within the code. We do not hold the copyr
   ```  
 
 
-#### 3.2 Adult Dataset (UCI)  
+#### 3.2 Adult Dataset 
 - **Goal**: Download and store in the `./adult_dataset` directory  
 - **Commands to execute**:  
   ```bash
@@ -93,8 +91,8 @@ The Insurance dataset is also provided within the code. We do not hold the copyr
   ```  
 
 
-#### 3.4 Covertype Dataset (UCI)  
-- **Goal**: Download and unzip to the `./covertype_dataset` directory (final file: `covtype.data`)  
+#### 3.4 Covertype Dataset 
+- **Goal**: Download and unzip to the `./covertype_dataset` directory 
 - **Commands to execute**:  
   ```bash
   # Create dataset directory
@@ -106,7 +104,7 @@ The Insurance dataset is also provided within the code. We do not hold the copyr
   ```  
 
 
-#### 3.5 Intrusion Dataset (UCI KDD Cup 99)  
+#### 3.5 Intrusion Dataset 
 - **Goal**: Download and unzip the training and test sets to the `~/Tabula/Real_Datasets/Intrusion` directory  
 - **Commands to execute**:  
   ```bash
@@ -153,7 +151,7 @@ python Tabula_middle_padding_on_adult_dataset.py
 When generating synthetic data for the standard version of the Covertype and Intrusion datasets in Python, calling the `sample` method triggers a warning: `The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's attention_mask to obtain reliable results.`, and the progress bar freezes (e.g., `0%|                                               | 0/50000 [02:23<?, ?it/s`).
 
 
-## bibtex 
+## Bib Tex 
 
 ```
 @inproceedings{zhao2025tabula,
