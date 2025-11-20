@@ -21,12 +21,12 @@ model.fit(data, conditional_col = data.columns[0])
 
 # %%
 import torch
-torch.save(model.model.state_dict(), "king_training/model_50epoch.pt")
+torch.save(model.model.state_dict(), "king_training/model_300epoch.pt")
 
 # %%
 synthetic_data = model.sample(n_samples=21613, 
     max_length=250 )
-synthetic_data.to_csv("king_50epoch.csv", index=False)
+synthetic_data.to_csv("king_300epoch.csv", index=False)
 
 # %%
 
