@@ -2,7 +2,7 @@
 
 # change tabula to tabula_middle_padding to test middle padding method
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from tabula import Tabula 
 import pandas as pd
 
@@ -23,19 +23,11 @@ model = Tabula(llm='distilgpt2', experiment_dir = "insurance_training", batch_si
 import torch
 model.model.load_state_dict(torch.load("pretrained-model/tabula_pretrained_model.pt"), strict=False)
 
-
-
-
 model.fit(data)
-
-
-
 
 
 import torch
 torch.save(model.model.state_dict(), "insurance_training/model_400epoch.pt")
-
-:
 
 
 synthetic_data = model.sample(n_samples=1338)

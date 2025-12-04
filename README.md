@@ -58,76 +58,48 @@ pip install -r requirements.txt
 ### 2.3 Downloading Various Datasets
 
 #### 2.3.1 Insurance Dataset
-- **Objective**: Download and store in the `./insurance` directory  
+- **Objective**: Download and store in the `./Real_Datasets/Insurance` directory  
 - **Command to execute**:  
   ```bash
   # Create a dataset directory
-  mkdir -p ./insurance
+  mkdir -p ./Real_Datasets/Insurance
   # Download and unzip the dataset to the specified directory
-  kaggle datasets download -d mirichoi0218/insurance --unzip -p ./insurance
+  kaggle datasets download -d mirichoi0218/insurance --unzip -p ./Real_Datasets/Insurance
   ```  
 
 
 #### 2.3.2 Adult Dataset
-- **Objective**: Download and store in the `./adult_dataset` directory  
+- **Objective**: Download and store in the `./Real_Datasets/Adult` directory  
 - **Command to execute**:  
   ```bash
   # Create a dataset directory
-  mkdir -p ./adult_dataset
+  mkdir -p ./Real_Datasets/Adult
   # Download the data file (adult.data)
-  wget -P ./adult_dataset https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+  wget -P ./Real_Datasets/Adult https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
   ```  
 
 
 #### 2.3.3 Loan Dataset
-- **Objective**: Download and store in the `./loan_dataset` directory  
+- **Objective**: Download and store in the `./Real_Datasets/Loan` directory  
 - **Command to execute**:  
   ```bash
   # Create a dataset directory
-  mkdir -p ./loan_dataset
+  mkdir -p ./Real_Datasets/Loan
   # Download and unzip the dataset to the specified directory
-  kaggle datasets download -d itsmesunil/bank-loan-modelling --unzip -p ./loan_dataset
+  kaggle datasets download -d itsmesunil/bank-loan-modelling --unzip -p ./Real_Datasets/Loan
   ```  
 
 
-#### 2.3.4 Covertype Dataset
-- **Objective**: Download and unzip to the `./covertype_dataset` directory  
-- **Command to execute**:  
-  ```bash
-  # Create a dataset directory
-  mkdir -p ./covertype_dataset
-  # Download the compressed dataset
-  wget -P ./covertype_dataset https://archive.ics.uci.edu/ml/machine-learning-databases/covtype/covtype.data.gz
-  # Unzip the file (generates covtype.data)
-  gunzip ./covertype_dataset/covtype.data.gz
-  ```  
-
-
-#### 2.3.5 Intrusion Dataset
-- **Objective**: Download and unzip the training and test sets to the `~/Tabula/Real_Datasets/Intrusion` directory  
-- **Command to execute**:  
-  ```bash
-  # Create a dataset directory
-  mkdir -p ~/Tabula/Real_Datasets/Intrusion
-  # Download the training and test sets
-  wget -P ~/Tabula/Real_Datasets/Intrusion http://kdd.ics.uci.edu/databases/kddcup99/kddcup.data_10_percent.gz
-  wget -P ~/Tabula/Real_Datasets/Intrusion http://kdd.ics.uci.edu/databases/kddcup99/kddcup.testdata.unlabeled_10_percent.gz
-  # Unzip the training and test sets
-  gunzip ~/Tabula/Real_Datasets/Intrusion/kddcup.data_10_percent.gz
-  gunzip ~/Tabula/Real_Datasets/Intrusion/kddcup.testdata.unlabeled_10_percent.gz
-  ```  
-
-
-#### 2.3.6 King Dataset 
-- **Objective**: Download and store in the `~/Tabula/Real_Datasets` directory, and name it `King_compressed.csv`  
+#### 2.3.4 King Dataset 
+- **Objective**: Download and store in the `./Real_Datasets` directory, and name it `King_compressed.csv`  
 - **Command to execute**:  
   ```bash
   # Create a dataset directory (if it does not exist)
-  mkdir -p ~/Tabula/Real_Datasets
+  mkdir -p ./Real_Datasets
   # Download and unzip the dataset
-  kaggle datasets download -d harlfoxem/housesalesprediction --unzip -p ~/Tabula/Real_Datasets
+  kaggle datasets download -d harlfoxem/housesalesprediction --unzip -p ./Real_Datasets
   # Rename the dataset (to simplify subsequent loading paths)
-  mv ~/Tabula/Real_Datasets/kc_house_data.csv ~/Tabula/Real_Datasets/King_compressed.csv
+  mv ./Real_Datasets/kc_house_data.csv ./Real_Datasets/King_compressed.csv
   ```  
 
 
@@ -135,20 +107,15 @@ pip install -r requirements.txt
 
 ### 3.1 Running the Tabula Model (using the Insurance Dataset as an example)
 ```bash
-cd Tabula/run_tabula_code
 python Tabula_on_insurance_dataset.py
 ```
 
 
 ### 3.2 Running the Tabula_middle_padding Model (using the Adult Dataset as an example)
 ```bash
-cd Tabula/run_middle_padding_code
 python Tabula_middle_padding_on_adult_dataset.py
 ```
 
-
-## IV. Known Issues
-When generating synthetic data for the standard versions of the Covertype and Intrusion datasets in Python, calling the `sample` method triggers a warning: `The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's attention_mask to obtain reliable results.`, and the progress bar freezes (e.g.: `0%|                                               | 0/50000 [02:23<?, ?it/s`).
 
 
 ## V. References

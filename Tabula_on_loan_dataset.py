@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from tabula import Tabula
 
 # Set GPU device
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # Preprocess loan data
 # Read Excel file and locate 'Data' sheet

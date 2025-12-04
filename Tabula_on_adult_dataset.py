@@ -9,7 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from tabula import Tabula
 
 # Set GPU device
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 # Preprocess the Adult dataset
@@ -82,7 +82,7 @@ model.model.load_state_dict(torch.load("pretrained-model/tabula_pretrained_model
 
 
 # Train the model
-model.fit(data)
+model.fit(data.sample(n=500))
 
 
 # Save trained model

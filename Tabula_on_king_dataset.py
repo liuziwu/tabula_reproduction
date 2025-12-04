@@ -1,5 +1,10 @@
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+from tabula import Tabula 
 import pandas as pd
+import torch
+
 data = pd.read_csv("Real_Datasets/King_compressed.csv")
 print("King dataset shape:", data.shape)
 
@@ -22,13 +27,6 @@ cat_cols = data.select_dtypes(include=["object"]).columns.tolist()
 print("\nKing dataset final number of categorical columns:", len(cat_cols))
 print("Categorical columns list:", cat_cols)
 
-
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-from tabula import Tabula 
-import pandas as pd
-
-
 data = pd.read_csv("Real_Datasets/King_compressed.csv")
 print("Data shape:", data.shape)
 print("Categorical columns:", data.select_dtypes(include=["object"]).columns.tolist())
@@ -43,16 +41,12 @@ model = Tabula(
 )
 
 
-import torch
 model.model.load_state_dict(torch.load("pretrained-model/tabula_pretrained_model.pt"), strict=False)
 
-
-model.fit(data)
-
+model.fit(data.sample(n=500))
 
 torch.save(model.model.state_dict(), "king_training/model_300epoch.pt")
 print("King dataset training completed, model saved to: king_training/model_300epoch.pt")
-
 
 # Generate synthetic data with similar volume to original
 synthetic_data = model.sample(

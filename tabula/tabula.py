@@ -202,8 +202,14 @@ class Tabula:
                 start_tokens = torch.tensor(start_tokens).to(device)
 
                 # Generate tokens
-                tokens = self.model.generate(input_ids=start_tokens, max_length=max_length,
-                                             do_sample=True, temperature=temperature, pad_token_id=50256)
+                # Create attention mask: 1 for real tokens, 0 for padding
+                attention_mask = (start_tokens != 50256).long()
+                tokens = self.model.generate(input_ids=start_tokens, 
+                                             attention_mask=attention_mask,
+                                             max_length=max_length,
+                                             do_sample=True, 
+                                             temperature=temperature, 
+                                             pad_token_id=50256)
 
                 # Convert tokens back to tabular data
                 text_data = _convert_tokens_to_text(tokens, self.tokenizer)
@@ -260,8 +266,15 @@ class Tabula:
             start_token = torch.tensor(self.tokenizer(prompt)["input_ids"]).to(device)
 
             # Generate tokens
-            gen = self.model.generate(input_ids=torch.unsqueeze(start_token, 0), max_length=max_length,
-                                      do_sample=True, temperature=temperature, pad_token_id=50256)
+            # Create attention mask: 1 for real tokens, 0 for padding
+            input_ids = torch.unsqueeze(start_token, 0)
+            attention_mask = (input_ids != 50256).long()
+            gen = self.model.generate(input_ids=input_ids,
+                                      attention_mask=attention_mask,
+                                      max_length=max_length,
+                                      do_sample=True, 
+                                      temperature=temperature, 
+                                      pad_token_id=50256)
             generated_data.append(torch.squeeze(gen))
 
         # Convert Text back to Tabular Data
