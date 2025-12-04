@@ -121,10 +121,13 @@ python Tabula_middle_padding_on_insurance_dataset.py
 python evaluation.py
 ```
 
-## VI.Tabula Reproduction Experiment Results(insurance)
-|:----------|:----------|:------------------------------------|:-------------------------------------------|
-| Dataset   | Task Type | Average MAPE (Tabula Reproduction)  | Correlation Distance (Tabula Reproduction) |
-| Insurance | Regression| 0.5288                               | 0.1933                                      |
+# VI. Tabula Reproduction Experiment Results (Insurance Dataset)
+
+| Dataset   | Task Type | Average MAPE (Tabula Reproduction) | Correlation Distance (Tabula Reproduction) |
+|-----------|-----------|------------------------------------|-------------------------------------------|
+| Insurance | Regression| 0.5288                             | 0.1933                                    |
+
+
 
 
 ## V. References
