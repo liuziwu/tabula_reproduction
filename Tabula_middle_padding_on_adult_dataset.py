@@ -1,6 +1,6 @@
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from tabula_middle_padding import Tabula 
 import pandas as pd
 import torch
@@ -12,7 +12,7 @@ model = Tabula(llm='distilgpt2', experiment_dir = "adult_training", batch_size=3
 
 model.fit(data, conditional_col = data.columns[0])
 
-torch.save(model.model.state_dict(), "adult_training/model_50epoch.pt")
+torch.save(model.model.state_dict(), "adult_training/model_50epoch(1).pt")
 
 synthetic_data = model.sample(n_samples=6000)
-synthetic_data.to_csv("adult_50epoch.csv", index=False)
+synthetic_data.to_csv("adult_50epoch.csv(1)", index=False)

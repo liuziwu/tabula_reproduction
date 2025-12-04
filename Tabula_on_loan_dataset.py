@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from tabula import Tabula
 
 # Set GPU device
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 # Preprocess loan data
 # Read Excel file and locate 'Data' sheet
@@ -49,7 +49,7 @@ print("Categorical columns:", data.select_dtypes(include=["object"]).columns.tol
 model = Tabula(
     llm='distilgpt2', 
     experiment_dir="loan_training", 
-    batch_size=32, 
+    batch_size=8, 
     epochs=100, 
     categorical_columns=categorical_columns
 )

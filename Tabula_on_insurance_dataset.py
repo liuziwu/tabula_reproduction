@@ -8,13 +8,13 @@ import pandas as pd
 
 
 
-data = pd.read_csv("Real_Datasets/Insurance_compressed.csv")
+data = pd.read_csv("Real_Datasets/Insurance/insurance.csv")
 
 
 
 
 categorical_columns = ["sex", "children", "sm", "region"]
-model = Tabula(llm='distilgpt2', experiment_dir = "insurance_training", batch_size=32, epochs=400, categorical_columns = categorical_columns)
+model = Tabula(llm='distilgpt2', experiment_dir = "insurance_training", batch_size=8, epochs=400, categorical_columns = categorical_columns)
 
 
 

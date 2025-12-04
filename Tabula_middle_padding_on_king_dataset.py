@@ -12,8 +12,8 @@ model = Tabula(llm='distilgpt2', experiment_dir = "king_training", batch_size=32
 
 model.fit(data, conditional_col = data.columns[0])
 
-torch.save(model.model.state_dict(), "king_training/model_300epoch.pt")
+torch.save(model.model.state_dict(), "king_training/model_300epoch(1).pt")
 
 synthetic_data = model.sample(n_samples=21613, 
     max_length=250 )
-synthetic_data.to_csv("king_300epoch.csv", index=False)
+synthetic_data.to_csv("king_300epoch.csv(1)", index=False)

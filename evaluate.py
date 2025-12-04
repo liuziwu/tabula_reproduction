@@ -153,29 +153,17 @@ class TabulaEvaluator:
 
 # --- Usage Example ---
 if __name__ == "__main__":
-    # 1. Create Dummy Data for demonstration
-    # Real data
-    data_real = pd.DataFrame({
-        'Age': np.random.randint(20, 60, 100),
-        'Income': np.random.normal(50000, 10000, 100),
-        'City': np.random.choice(['NY', 'LA', 'SF'], 100),
-        'Purchased': np.random.choice([0, 1], 100) # Target
-    })
-
-    # Synthetic data (slightly perturbed)
-    data_syn = data_real.copy()
-    data_syn['Age'] = data_syn['Age'] + np.random.normal(0, 2, 100)
-    data_syn['Income'] = data_syn['Income'] + np.random.normal(0, 5000, 100)
-
-    # 2. Initialize Evaluator
-    # Setup for a classification task (Target: 'Purchased')
+    
+    real_data = pd.read_csv("./Real_Datasets/Insurance/insurance.csv")
+    synthetic_data = pd.read_csv("insurance_400epoch(1).csv")
+  
     evaluator = TabulaEvaluator(
-        real_data=data_real, 
-        synthetic_data=data_syn, 
-        target_column='Purchased', 
-        task_type='classification'
+        real_data=real_data,
+        synthetic_data=synthetic_data,
+        target_column='charges',  
+        task_type='regression'     
     )
 
-    # 3. Run Evaluations
+    #  Run Evaluations
     ml_utility_score = evaluator.evaluate_ml_utility()
     stat_similarity_score = evaluator.evaluate_statistical_similarity()

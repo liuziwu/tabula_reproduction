@@ -111,11 +111,20 @@ python Tabula_on_insurance_dataset.py
 ```
 
 
-### 3.2 Running the Tabula_middle_padding Model (using the Adult Dataset as an example)
+### 3.2 Running the Tabula_middle_padding Model (using the insurance Dataset as an example)
 ```bash
-python Tabula_middle_padding_on_adult_dataset.py
+python Tabula_middle_padding_on_insurance_dataset.py
 ```
 
+### 3.3 Run Evaluation with evaluate.py
+```bash
+python evaluation.py
+```
+
+## VI.Tabula Reproduction Experiment Results(insurance)
+|:----------|:----------|:------------------------------------|:-------------------------------------------|
+| Dataset   | Task Type | Average MAPE (Tabula Reproduction)  | Correlation Distance (Tabula Reproduction) |
+| Insurance | Regression| 0.5288                               | 0.1933                                      |
 
 
 ## V. References
