@@ -1,11 +1,13 @@
 import os
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import torch
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+
 from tabula import Tabula
 
 # Set GPU device
@@ -16,9 +18,21 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 def preprocess_adult_data():
     # Define column names for the Adult dataset
     adult_columns = [
-        "age", "workclass", "fnlwgt", "education", "education_num",
-        "marital_status", "occupation", "relationship", "race", "sex",
-        "capital_gain", "capital_loss", "hours_per_week", "native_country", "income"
+        "age",
+        "workclass",
+        "fnlwgt",
+        "education",
+        "education_num",
+        "marital_status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "capital_gain",
+        "capital_loss",
+        "hours_per_week",
+        "native_country",
+        "income",
     ]
 
     # Load training data
@@ -27,7 +41,7 @@ def preprocess_adult_data():
         names=adult_columns,
         sep=", ",
         engine="python",
-        na_values="?"
+        na_values="?",
     )
 
     # Load test data (skip header row)
@@ -37,7 +51,7 @@ def preprocess_adult_data():
         sep=", ",
         engine="python",
         na_values="?",
-        skiprows=1
+        skiprows=1,
     )
 
     # Combine training and test data
@@ -51,7 +65,9 @@ def preprocess_adult_data():
 
     # Save preprocessed data
     adult_data.to_csv("Real_Datasets/Adult_compressed.csv", index=False)
-    print(f"Preprocessing completed! The Adult dataset has {len(adult_data)} rows. Saved to: Real_Datasets/Adult_compressed.csv")
+    print(
+        f"Preprocessing completed! The Adult dataset has {len(adult_data)} rows. Saved to: Real_Datasets/Adult_compressed.csv"
+    )
 
 
 # Execute preprocessing
@@ -63,22 +79,31 @@ data = pd.read_csv("Real_Datasets/Adult_compressed.csv")
 
 # Specify categorical columns for the Adult dataset
 categorical_columns = [
-    "workclass", "education", "marital_status", "occupation",
-    "relationship", "race", "sex", "native_country", "income"
+    "workclass",
+    "education",
+    "marital_status",
+    "occupation",
+    "relationship",
+    "race",
+    "sex",
+    "native_country",
+    "income",
 ]
 
 # Initialize Tabula model
 model = Tabula(
-    llm='distilgpt2',
+    llm="distilgpt2",
     experiment_dir="adult_training",
     batch_size=32,
     epochs=50,
-    categorical_columns=categorical_columns
+    categorical_columns=categorical_columns,
 )
 
 
 # Load pretrained model weights
-model.model.load_state_dict(torch.load("pretrained-model/tabula_pretrained_model.pt"), strict=False)
+model.model.load_state_dict(
+    torch.load("pretrained-model/tabula_pretrained_model.pt"), strict=False
+)
 
 
 # Train the model
@@ -104,13 +129,17 @@ def encode_data(df):
         df[col] = encoder.fit_transform(df[col])
     return df
 
+
 # Encode real and synthetic data
 real_data_encoded = encode_data(data.copy())
 synth_data_encoded = encode_data(synthetic_data.copy())
 
 # Split features and target (target: 'income')
 X_real, y_real = real_data_encoded.drop("income", axis=1), real_data_encoded["income"]
-X_synth, y_synth = synth_data_encoded.drop("income", axis=1), synth_data_encoded["income"]
+X_synth, y_synth = (
+    synth_data_encoded.drop("income", axis=1),
+    synth_data_encoded["income"],
+)
 
 # Split real data into train and test sets
 X_real_train, X_real_test, y_real_train, y_real_test = train_test_split(

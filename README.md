@@ -1,7 +1,7 @@
 # TabuLa: Harnessing Language Models for Tabular Data Synthesis
 
-[Original Paper](https://arxiv.org/abs/2310.12746)  
-[Source Code ](https://github.com/zhao-zilong/Tabula "Hosted on GitHub")  
+This repo is a reproduction of the paper: [TabuLa: Harnessing Language Models for Tabular Data Synthesis](https://arxiv.org/abs/2310.12746)  
+This repository is developed based on an existing open-source repository: [Tabula](https://github.com/zhao-zilong/Tabula)
 
 
 ## I. Environment Preparation

@@ -1,17 +1,25 @@
-
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-from tabula import Tabula 
 import pandas as pd
 import torch
+
+from tabula import Tabula
 
 data = pd.read_csv("Real_Datasets/King_compressed.csv")
 print("King dataset shape:", data.shape)
 
 # Define categorical columns for King dataset
 categorical_columns = [
-    "bedrooms", "bathrooms", "floors", "waterfront", "view", 
-    "condition", "grade", "zipcode", "price"
+    "bedrooms",
+    "bathrooms",
+    "floors",
+    "waterfront",
+    "view",
+    "condition",
+    "grade",
+    "zipcode",
+    "price",
 ]
 
 # Convert categorical columns to object type for model recognition
@@ -33,25 +41,28 @@ print("Categorical columns:", data.select_dtypes(include=["object"]).columns.tol
 
 
 model = Tabula(
-    llm='distilgpt2', 
+    llm="distilgpt2",
     experiment_dir="king_training",
     batch_size=16,  # Reduce batch size to prevent GPU OOM (more features per row)
-    epochs=300,     # Adjusted for smaller dataset
-    categorical_columns=categorical_columns
+    epochs=300,  # Adjusted for smaller dataset
+    categorical_columns=categorical_columns,
 )
 
 
-model.model.load_state_dict(torch.load("pretrained-model/tabula_pretrained_model.pt"), strict=False)
+model.model.load_state_dict(
+    torch.load("pretrained-model/tabula_pretrained_model.pt"), strict=False
+)
 
-model.fit(data.sample(n=500))
+model.fit(data)
 
 torch.save(model.model.state_dict(), "king_training/model_300epoch.pt")
-print("King dataset training completed, model saved to: king_training/model_300epoch.pt")
+print(
+    "King dataset training completed, model saved to: king_training/model_300epoch.pt"
+)
 
 # Generate synthetic data with similar volume to original
 synthetic_data = model.sample(
-    n_samples=21613, 
-    max_length=250  # Match training max_length to avoid truncation
+    n_samples=21613, max_length=250  # Match training max_length to avoid truncation
 )
 
 synthetic_data.to_csv("king_300epoch.csv", index=False)

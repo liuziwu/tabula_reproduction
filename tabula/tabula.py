@@ -1,29 +1,39 @@
-import os
-import warnings
 import json
-import typing as tp
 import logging
+import os
+import typing as tp
+import warnings
 
 import numpy as np
 import pandas as pd
-from sklearn import preprocessing
-
-from tqdm import tqdm
 import torch
-from transformers import (AutoTokenizer,
-                          AutoModelForCausalLM,
-                          TrainingArguments,
-                          AutoConfig)
+from sklearn import preprocessing
+from tqdm import tqdm
+from transformers import (
+    AutoConfig,
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    TrainingArguments,
+)
 
-from tabula.tabula_dataset import TabulaDataset, TabulaDataCollator
-from tabula.tabula_start import TabulaStart, CategoricalStart, ContinuousStart, RandomStart
+from tabula.tabula_dataset import TabulaDataCollator, TabulaDataset
+from tabula.tabula_start import (
+    CategoricalStart,
+    ContinuousStart,
+    RandomStart,
+    TabulaStart,
+)
 from tabula.tabula_trainer import TabulaTrainer
-from tabula.tabula_utils import _array_to_dataframe, _get_column_distribution, _convert_tokens_to_text, \
-    _convert_text_to_tabular_data
+from tabula.tabula_utils import (
+    _array_to_dataframe,
+    _convert_text_to_tabular_data,
+    _convert_tokens_to_text,
+    _get_column_distribution,
+)
 
 
 class Tabula:
-    """ Tabula Class
+    """Tabula Class
 
     The Tabula class handles the whole generation flow. It is used to fine-tune a large language model for tabular data,
     and to sample synthetic tabular data.
@@ -44,9 +54,16 @@ class Tabula:
         conditional_col_dist (dict | list): Distribution of the feature/column specified by condtional_col
     """
 
-    def __init__(self, llm: str, experiment_dir: str = "trainer_tabula", epochs: int = 100,
-                 batch_size: int = 8, categorical_columns: list = [], **train_kwargs):
-        """ Initializes Tabula.
+    def __init__(
+        self,
+        llm: str,
+        experiment_dir: str = "trainer_tabula",
+        epochs: int = 100,
+        batch_size: int = 8,
+        categorical_columns: list = [],
+        **train_kwargs,
+    ):
+        """Initializes Tabula.
 
         Args:
             llm: HuggingFace checkpoint of a pretrained large language model, used a basis of our model
@@ -70,7 +87,7 @@ class Tabula:
         self.batch_size = batch_size
         self.categorical_columns = categorical_columns
         self.train_hyperparameters = train_kwargs
-        
+
         # Needed for the sampling process
         self.columns = None
         self.num_cols = None
@@ -79,48 +96,56 @@ class Tabula:
 
     def encode_categorical_column(self, data: pd.DataFrame):
         self.label_encoder_list = []
-        for column_index, column in enumerate(data.columns):            
-            if column in self.categorical_columns:        
+        for column_index, column in enumerate(data.columns):
+            if column in self.categorical_columns:
                 label_encoder = preprocessing.LabelEncoder()
                 data[column] = data[column].astype(str)
                 label_encoder.fit(data[column])
                 current_label_encoder = dict()
-                current_label_encoder['column'] = column
-                current_label_encoder['label_encoder'] = label_encoder
+                current_label_encoder["column"] = column
+                current_label_encoder["label_encoder"] = label_encoder
                 transformed_column = label_encoder.transform(data[column])
                 data[column] = transformed_column
                 self.label_encoder_list.append(current_label_encoder)
         return data
-    
 
     def decode_categorical_column(self, data: pd.DataFrame):
 
         for i in range(len(self.label_encoder_list)):
             le = self.label_encoder_list[i]["label_encoder"]
             allowed_values = list(range(len(le.classes_)))
-            
+
             # delete rows that should generate numeric value but generate other data type
-            data[self.label_encoder_list[i]['column']] = pd.to_numeric(data[self.label_encoder_list[i]['column']], errors='coerce')
-            data = data.dropna(subset=[self.label_encoder_list[i]['column']])
+            data[self.label_encoder_list[i]["column"]] = pd.to_numeric(
+                data[self.label_encoder_list[i]["column"]], errors="coerce"
+            )
+            data = data.dropna(subset=[self.label_encoder_list[i]["column"]])
 
             # delete rows that generate category that is out of boundary
-            data[self.label_encoder_list[i]['column']] = data[self.label_encoder_list[i]['column']].astype(float)
-            data = data[data[self.label_encoder_list[i]['column']].isin(allowed_values)]
-
+            data[self.label_encoder_list[i]["column"]] = data[
+                self.label_encoder_list[i]["column"]
+            ].astype(float)
+            data = data[data[self.label_encoder_list[i]["column"]].isin(allowed_values)]
 
         for i in range(len(self.label_encoder_list)):
             le = self.label_encoder_list[i]["label_encoder"]
-            data[self.label_encoder_list[i]["column"]] = data[self.label_encoder_list[i]["column"]].astype(int)
-            data[self.label_encoder_list[i]["column"]] = le.inverse_transform(data[self.label_encoder_list[i]["column"]])
-            
+            data[self.label_encoder_list[i]["column"]] = data[
+                self.label_encoder_list[i]["column"]
+            ].astype(int)
+            data[self.label_encoder_list[i]["column"]] = le.inverse_transform(
+                data[self.label_encoder_list[i]["column"]]
+            )
+
         return data
 
-
-
-    def fit(self, data: tp.Union[pd.DataFrame, np.ndarray], column_names: tp.Optional[tp.List[str]] = None,
-            conditional_col: tp.Optional[str] = None, resume_from_checkpoint: tp.Union[bool, str] = False) \
-            -> TabulaTrainer:
-        """ Fine-tune Tabula using tabular data.
+    def fit(
+        self,
+        data: tp.Union[pd.DataFrame, np.ndarray],
+        column_names: tp.Optional[tp.List[str]] = None,
+        conditional_col: tp.Optional[str] = None,
+        resume_from_checkpoint: tp.Union[bool, str] = False,
+    ) -> TabulaTrainer:
+        """Fine-tune Tabula using tabular data.
 
         Args:
             data: Pandas DataFrame or Numpy Array that contains the tabular data
@@ -149,23 +174,37 @@ class Tabula:
 
         # Set training hyperparameters
         logging.info("Create Tabula Trainer...")
-        training_args = TrainingArguments(self.experiment_dir,
-                                          num_train_epochs=self.epochs,
-                                          per_device_train_batch_size=self.batch_size,
-                                          save_strategy="no",
-                                          **self.train_hyperparameters)
-        tabula_trainer = TabulaTrainer(self.model, training_args, train_dataset=tabula_ds, tokenizer=self.tokenizer,
-                                     data_collator=TabulaDataCollator(self.tokenizer))
+        training_args = TrainingArguments(
+            self.experiment_dir,
+            num_train_epochs=self.epochs,
+            per_device_train_batch_size=self.batch_size,
+            save_strategy="no",
+            **self.train_hyperparameters,
+        )
+        tabula_trainer = TabulaTrainer(
+            self.model,
+            training_args,
+            train_dataset=tabula_ds,
+            tokenizer=self.tokenizer,
+            data_collator=TabulaDataCollator(self.tokenizer),
+        )
 
         # Start training
         logging.info("Start training...")
         tabula_trainer.train(resume_from_checkpoint=resume_from_checkpoint)
         return tabula_trainer
 
-    def sample(self, n_samples: int,
-               start_col: tp.Optional[str] = "", start_col_dist: tp.Optional[tp.Union[dict, list]] = None,
-               temperature: float = 0.7, k: int = 100, max_length: int = 100, device: str = "cuda") -> pd.DataFrame:
-        """ Generate synthetic tabular data samples
+    def sample(
+        self,
+        n_samples: int,
+        start_col: tp.Optional[str] = "",
+        start_col_dist: tp.Optional[tp.Union[dict, list]] = None,
+        temperature: float = 0.7,
+        k: int = 100,
+        max_length: int = 100,
+        device: str = "cuda",
+    ) -> pd.DataFrame:
+        """Generate synthetic tabular data samples
 
         Args:
             n_samples: Number of synthetic samples to generate
@@ -204,12 +243,14 @@ class Tabula:
                 # Generate tokens
                 # Create attention mask: 1 for real tokens, 0 for padding
                 attention_mask = (start_tokens != 50256).long()
-                tokens = self.model.generate(input_ids=start_tokens, 
-                                             attention_mask=attention_mask,
-                                             max_length=max_length,
-                                             do_sample=True, 
-                                             temperature=temperature, 
-                                             pad_token_id=50256)
+                tokens = self.model.generate(
+                    input_ids=start_tokens,
+                    attention_mask=attention_mask,
+                    max_length=max_length,
+                    do_sample=True,
+                    temperature=temperature,
+                    pad_token_id=50256,
+                )
 
                 # Convert tokens back to tabular data
                 text_data = _convert_tokens_to_text(tokens, self.tokenizer)
@@ -217,7 +258,9 @@ class Tabula:
 
                 # Remove rows with flawed numerical values
                 for i_num_cols in self.num_cols:
-                    df_gen = df_gen[pd.to_numeric(df_gen[i_num_cols], errors='coerce').notnull()]
+                    df_gen = df_gen[
+                        pd.to_numeric(df_gen[i_num_cols], errors="coerce").notnull()
+                    ]
 
                 df_gen[self.num_cols] = df_gen[self.num_cols].astype(float)
 
@@ -228,7 +271,6 @@ class Tabula:
                 pbar.update(df_gen.shape[0] - already_generated)
                 already_generated = df_gen.shape[0]
 
-
         df_gen = df_gen.reset_index(drop=True)
 
         if self.categorical_columns == []:
@@ -237,9 +279,14 @@ class Tabula:
             df_inversed = self.decode_categorical_column(df_gen.head(n_samples))
             return df_inversed
 
-    def tabula_sample(self, starting_prompts: tp.Union[str, list[str]], temperature: float = 0.7, max_length: int = 100,
-                     device: str = "cuda") -> pd.DataFrame:
-        """ Generate synthetic tabular data samples conditioned on a given input.
+    def tabula_sample(
+        self,
+        starting_prompts: tp.Union[str, list[str]],
+        temperature: float = 0.7,
+        max_length: int = 100,
+        device: str = "cuda",
+    ) -> pd.DataFrame:
+        """Generate synthetic tabular data samples conditioned on a given input.
 
         Args:
             starting_prompts: String or List of Strings on which the output is conditioned.
@@ -258,7 +305,11 @@ class Tabula:
         # ToDo: Add n_samples argument to generate more samples for one conditional input.
 
         self.model.to(device)
-        starting_prompts = [starting_prompts] if isinstance(starting_prompts, str) else starting_prompts
+        starting_prompts = (
+            [starting_prompts]
+            if isinstance(starting_prompts, str)
+            else starting_prompts
+        )
         generated_data = []
 
         # Generate a sample for each starting point
@@ -269,22 +320,26 @@ class Tabula:
             # Create attention mask: 1 for real tokens, 0 for padding
             input_ids = torch.unsqueeze(start_token, 0)
             attention_mask = (input_ids != 50256).long()
-            gen = self.model.generate(input_ids=input_ids,
-                                      attention_mask=attention_mask,
-                                      max_length=max_length,
-                                      do_sample=True, 
-                                      temperature=temperature, 
-                                      pad_token_id=50256)
+            gen = self.model.generate(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                max_length=max_length,
+                do_sample=True,
+                temperature=temperature,
+                pad_token_id=50256,
+            )
             generated_data.append(torch.squeeze(gen))
 
         # Convert Text back to Tabular Data
         decoded_data = _convert_tokens_to_text(generated_data, self.tokenizer)
-        df_gen = _convert_text_to_tabular_data(decoded_data, pd.DataFrame(columns=self.columns))
+        df_gen = _convert_text_to_tabular_data(
+            decoded_data, pd.DataFrame(columns=self.columns)
+        )
 
         return df_gen
 
     def save(self, path: str):
-        """ Save Tabula Model
+        """Save Tabula Model
 
         Saves the model weights and a configuration file in the given directory.
 
@@ -305,7 +360,9 @@ class Tabula:
 
             # NDArray is not JSON serializable and therefore has to be converted into a list.
             if isinstance(attributes["conditional_col_dist"], np.ndarray):
-                attributes["conditional_col_dist"] = list(attributes["conditional_col_dist"])
+                attributes["conditional_col_dist"] = list(
+                    attributes["conditional_col_dist"]
+                )
 
             json.dump(attributes, f)
 
@@ -313,7 +370,7 @@ class Tabula:
         torch.save(self.model.state_dict(), path + "/model.pt")
 
     def load_finetuned_model(self, path: str):
-        """ Load fine-tuned model
+        """Load fine-tuned model
 
         Load the weights of a fine-tuned large language model into the Tabula pipeline
 
@@ -324,7 +381,7 @@ class Tabula:
 
     @classmethod
     def load_from_dir(cls, path: str):
-        """ Load Tabula class
+        """Load Tabula class
 
         Load trained Tabula model from directory.
 
@@ -357,27 +414,42 @@ class Tabula:
         self.columns = df.columns.to_list()
         self.num_cols = df.select_dtypes(include=np.number).columns.to_list()
 
-    def _update_conditional_information(self, df: pd.DataFrame, conditional_col: tp.Optional[str] = None):
-        assert conditional_col is None or isinstance(conditional_col, str), \
-            f"The column name has to be a string and not {type(conditional_col)}"
-        assert conditional_col is None or conditional_col in df.columns, \
-            f"The column name {conditional_col} is not in the feature names of the given dataset"
+    def _update_conditional_information(
+        self, df: pd.DataFrame, conditional_col: tp.Optional[str] = None
+    ):
+        assert conditional_col is None or isinstance(
+            conditional_col, str
+        ), f"The column name has to be a string and not {type(conditional_col)}"
+        assert (
+            conditional_col is None or conditional_col in df.columns
+        ), f"The column name {conditional_col} is not in the feature names of the given dataset"
 
         # Take the distribution of the conditional column for a starting point in the generation process
         self.conditional_col = conditional_col if conditional_col else df.columns[-1]
         self.conditional_col_dist = _get_column_distribution(df, self.conditional_col)
 
-    def _get_start_sampler(self, start_col: tp.Optional[str],
-                           start_col_dist: tp.Optional[tp.Union[tp.Dict, tp.List]]) -> TabulaStart:
+    def _get_start_sampler(
+        self,
+        start_col: tp.Optional[str],
+        start_col_dist: tp.Optional[tp.Union[tp.Dict, tp.List]],
+    ) -> TabulaStart:
         if start_col and start_col_dist is None:
-            raise ValueError(f"Start column {start_col} was given, but no corresponding distribution.")
+            raise ValueError(
+                f"Start column {start_col} was given, but no corresponding distribution."
+            )
         if start_col_dist is not None and not start_col:
-            raise ValueError(f"Start column distribution {start_col} was given, the column name is missing.")
+            raise ValueError(
+                f"Start column distribution {start_col} was given, the column name is missing."
+            )
 
-        assert start_col is None or isinstance(start_col, str), \
-            f"The column name has to be a string and not {type(start_col)}"
-        assert start_col_dist is None or isinstance(start_col_dist, dict) or isinstance(start_col_dist, list), \
-            f"The distribution of the start column on has to be a list or a dict and not {type(start_col_dist)}"
+        assert start_col is None or isinstance(
+            start_col, str
+        ), f"The column name has to be a string and not {type(start_col)}"
+        assert (
+            start_col_dist is None
+            or isinstance(start_col_dist, dict)
+            or isinstance(start_col_dist, list)
+        ), f"The distribution of the start column on has to be a list or a dict and not {type(start_col_dist)}"
 
         start_col = start_col if start_col else self.conditional_col
         start_col_dist = start_col_dist if start_col_dist else self.conditional_col_dist

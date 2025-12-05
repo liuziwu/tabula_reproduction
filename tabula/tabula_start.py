@@ -1,6 +1,7 @@
 import random
-import numpy as np
 import typing as tp
+
+import numpy as np
 
 
 def _pad(x, length: int, pad_value=50256):
@@ -27,13 +28,14 @@ def _pad_tokens(tokens):
 
 
 class TabulaStart:
-    """ Abstract super class Tabula Start
+    """Abstract super class Tabula Start
 
     Tabula Start creates tokens to start the generation process.
 
     Attributes:
         tokenizer (AutoTokenizer): Tokenizer, automatically downloaded from llm-checkpoint
     """
+
     def __init__(self, tokenizer):
         """
         Initializes the super class.
@@ -44,7 +46,7 @@ class TabulaStart:
         self.tokenizer = tokenizer
 
     def get_start_tokens(self, n_samples: int) -> tp.List[tp.List[int]]:
-        """ Get Start Tokens
+        """Get Start Tokens
 
         Creates starting points for the generation process
 
@@ -58,7 +60,7 @@ class TabulaStart:
 
 
 class CategoricalStart(TabulaStart):
-    """ Categorical Starting Feature
+    """Categorical Starting Feature
 
     A categorical column with its categories is used as starting point.
 
@@ -68,8 +70,9 @@ class CategoricalStart(TabulaStart):
         weights (list[float]): Probabilities for the individual categories
 
     """
+
     def __init__(self, tokenizer, start_col: str, start_col_dist: dict):
-        """ Initializes the Categorical Start
+        """Initializes the Categorical Start
 
         Args:
             tokenizer: Tokenizer from the HuggingFace library
@@ -93,7 +96,7 @@ class CategoricalStart(TabulaStart):
 
 
 class ContinuousStart(TabulaStart):
-    """ Continuous Starting Feature
+    """Continuous Starting Feature
 
     A continuous column with some noise is used as starting point.
 
@@ -103,9 +106,16 @@ class ContinuousStart(TabulaStart):
         noise (float): Size of noise that is added to each value
         decimal_places (int): Number of decimal places the continuous values have
     """
-    def __init__(self, tokenizer, start_col: str, start_col_dist: tp.List[float],
-                 noise: float = .01, decimal_places: int = 5):
-        """ Initializes the Continuous Start
+
+    def __init__(
+        self,
+        tokenizer,
+        start_col: str,
+        start_col_dist: tp.List[float],
+        noise: float = 0.01,
+        decimal_places: int = 5,
+    ):
+        """Initializes the Continuous Start
 
         Args:
             tokenizer: Tokenizer from the HuggingFace library
@@ -126,21 +136,25 @@ class ContinuousStart(TabulaStart):
 
     def get_start_tokens(self, n_samples):
         start_words = random.choices(self.start_col_dist, k=n_samples)
-        start_text = [self.start_col + " " + format(s, f".{self.decimal_places}f") + "," for s in start_words]
+        start_text = [
+            self.start_col + " " + format(s, f".{self.decimal_places}f") + ","
+            for s in start_words
+        ]
         start_tokens = _pad_tokens(self.tokenizer(start_text)["input_ids"])
         return start_tokens
 
 
 class RandomStart(TabulaStart):
-    """ Random Starting Features
+    """Random Starting Features
 
     Random column names are used as start point. Can be used if no distribution of any column is known.
 
     Attributes:
         all_columns (List[str]): Names of all columns
     """
+
     def __init__(self, tokenizer, all_columns: tp.List[str]):
-        """ Initializes the Random Start
+        """Initializes the Random Start
 
         Args:
             tokenizer: Tokenizer from the HuggingFace library
